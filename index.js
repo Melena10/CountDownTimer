@@ -72,3 +72,20 @@ buttonStart.addEventListener("click", function() {
 
 timerId = setInterval(countDown, 1000);
 });
+
+
+buttonReset.addEventListener('click', function() {
+  newTitle = 'Создать новый таймер обратного отсчета';
+  
+  date.value = '';
+  titleDate.value = '';
+  
+  
+  buttonStart.classList.remove("hide");
+  buttonReset.classList.add("hide");
+  
+  input.classList.remove("hide");
+  output.classList.add("hide");
+
+  clearInterval(timerId);
+})
