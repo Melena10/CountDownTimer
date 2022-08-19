@@ -1,91 +1,97 @@
 "use strict";
 
-const titleDate = document.querySelector("#title-date");
-const date = document.querySelector("#date");
-
 const buttonStart = document.querySelector("#btn");
 const buttonReset = document.querySelector("#btn-reset");
-
-const numbers = document.querySelector(".numbers");
 const complete = document.querySelector(".complete");
-const timeLabels = document.querySelector(".time-labels");
-const h1 = document.querySelector("h1");
-
+const titleDate = document.querySelector("#title-date");
+const date = document.querySelector("#date");
 const input = document.querySelector(".input");
 const output = document.querySelector(".output");
+const numbers = document.querySelector(".numbers");
+const h1 = document.querySelector("h1");
 
-const daysBlock = document.querySelector(".timer_days");
-const hoursBlock = document.querySelector(".timer_hours");
-const minutesBlock = document.querySelector(".timer_mins");
-const secondsBlock = document.querySelector(".timer_secs");
-
-let timerId = null;
-let deadline;
-let newTitle;
+let deadline = "";
+let interval;
 
 function countDown() {
-  deadline = new Date(date.value);
-  const now = new Date();
+  deadline = date.value;
 
-  let diff = deadline.getTime() - now.getTime();
-
-let days = Math.floor(diff/(1000*60*60*24));
-let hours = Math.floor((diff/(1000*60*60))%24);
-let minutes = Math.floor((diff/(1000*60))%60);
-let seconds = Math.floor((diff/1000)%60);
-
-daysBlock.innerText = days;
-hoursBlock.innerText = hours < 10 ? '0'+ hours: hours;
-minutesBlock.innerText = minutes < 10 ? '0'+ minutes: minutes;
-secondsBlock.innerText = seconds < 10 ? '0'+ seconds: seconds;
-
-
-  if (deadline !== "") {
-  
-      if (diff <= 0) {
-
-      complete.classList.remove('hide');
-      complete.textContent = `${titleDate.value} завершился ${deadline}`
-      clearInterval(timerId);
-            return;
+  if (deadline === "") {
+    alert("Пожалуйста введите дату");
+    return;
+  } else if (isNaN(Date.parse(deadline))) {
+    alert("Пожалуйста введите корректную дату");
+    return;
   }
-  
-  timeLabels.textContent = `${'Days'} : ${ ' Hours ' } : ${'Mins'} : ${'Secs'}`;
-  numbers.textContent = `${days}:${hours}:${minutes}:${seconds}`
 
-  newTitle = h1.textContent = titleDate.value;
+  h1.textContent = titleDate.value;
+  localStorage.setItem("titleTimer", titleDate.value);
+  localStorage.setItem("dateTimer", date.value);
 
-    input.classList.add("hide");
-    output.classList.remove("hide");
-
-    buttonStart.classList.add("hide");
-    buttonReset.classList.remove("hide");
-
-  } else {
-    alert("Пожалуйста, введите дату");
-  }
+  showNextView();
 }
 
+function showNextView() {
+  buttonStart.classList.add("hide");
+  buttonReset.classList.remove("hide");
+  input.classList.add("hide");
+  output.classList.remove("hide");
 
-buttonStart.addEventListener("click", function() {
-  countDown();
+  dateCalculation();
+  interval = setInterval(dateCalculation, 1000);
+}
 
-timerId = setInterval(countDown, 1000);
-});
+function dateCalculation() {
+  const now = new Date().getTime();
+  const diff = new Date(deadline).getTime() - now;
 
+  if (diff < 0) {
+    output.classList.add("hide");
+    complete.classList.remove("hide");
 
-buttonReset.addEventListener('click', function() {
-  newTitle = 'Создать новый таймер обратного отсчета';
-  
-  date.value = '';
-  titleDate.value = '';
-  
-  
+    clearInterval(interval);
+    complete.textContent = `${deadline.textContent} завершился ${deadline}`;
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  numbers.textContent = `${days}:${hours}:${minutes}:${seconds}`;
+}
+
+function resetCountdown() {
   buttonStart.classList.remove("hide");
   buttonReset.classList.add("hide");
-  
   input.classList.remove("hide");
   output.classList.add("hide");
+  complete.classList.add("hide");
 
-  clearInterval(timerId);
-})
+  h1.textContent = "Создать новый таймер обратного отсчета";
+  titleDate.value = "";
+  date.value = "";
+
+  clearInterval(interval);
+  localStorage.removeItem("titleTimer");
+  localStorage.removeItem("dateTimer");
+}
+
+function restoreCountdown() {
+  const titleTimer = localStorage.getItem("titleTimer");
+  const dateTimer = localStorage.getItem("dateTimer");
+
+  if (!(titleTimer && dateTimer)) {
+    return;
+  }
+  h1.textContent = titleTimer;
+  deadline = dateTimer;
+
+  showNextView();
+}
+
+buttonStart.addEventListener("click", countDown);
+buttonReset.addEventListener("click", resetCountdown);
+
+restoreCountdown();
