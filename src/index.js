@@ -3,7 +3,6 @@
 import '../style.css';
 
 
-
 const buttonStart = document.querySelector("#btn");
 const buttonReset = document.querySelector("#btn-reset");
 const complete = document.querySelector(".complete");
